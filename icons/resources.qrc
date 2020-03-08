@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>rabbit.png</file>
+        <file>carrot.png</file>
+        <file>hole.png</file>
+        <file>wolf.png</file>
+        <file>hidden-rabbit.png</file>
+    </qresource>
+</RCC>

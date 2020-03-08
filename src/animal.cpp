@@ -23,14 +23,19 @@ void Animal::changeAnimalPos(const int pos)
     animalPos = pos;
 }
 
-int Animal::findNeareastObject(const QVector<int> &object)
+int Animal::findNeareastObject(const QVector<int> &object, const QVector<int> &obstacles)
 {
     int total = MainWindow::COLS * MainWindow::COLS;
     QVector<pair<int,int> > grassLand;
     for (int i = 0; i < total; ++i) {
-        grassLand.push_back(make_pair(i, -1));
+        grassLand.push_back(make_pair(i, false));
     }
-    grassLand[animalPos].second = 0;
+
+    //设置不允许visit的地方
+    grassLand[animalPos].second = true;
+    for (int i = 0; i < obstacles.size(); ++i) {
+        grassLand[obstacles[i]].second = true;
+    }
 
     std::priority_queue<paired, QVector<paired>, std::greater<paired> > queue;
     addToQueue(queue, animalPos, 1);
@@ -38,8 +43,8 @@ int Animal::findNeareastObject(const QVector<int> &object)
         int cost = queue.top().first;
         int pos = queue.top().second;
         queue.pop();
-        if (grassLand[pos].second == -1) {
-            grassLand[pos].second = cost;
+        if (grassLand[pos].second == false) {
+            grassLand[pos].second = true;
 
             int index = isObject(object, pos);
             if (index != -1)
@@ -52,12 +57,12 @@ int Animal::findNeareastObject(const QVector<int> &object)
     return -1; // 没有找到的话返回-1
 }
 
-const pair<int, int> Animal::findNextMoveToObject(const int start, const int end)
+const pair<int, int> Animal::findNextMoveToObject(const int start, const int end, const QVector<int> &obstacles)
 {
     QVector<int> aroundPlaces = getAroundPlaces(start);
     int nextMove = aroundPlaces[0], minCost = INT_MAX;
     for (int i = 0; i < aroundPlaces.size(); ++i) {
-        int cost = calculateCostToObject(aroundPlaces[i], end);
+        int cost = calculateCostToObject(aroundPlaces[i], end, obstacles);
         if (minCost > cost) {
             minCost = cost;
             nextMove = aroundPlaces[i];
@@ -111,12 +116,16 @@ int Animal::isObject(const QVector<int> &object, const int pos)
     return -1;
 }
 
-int Animal::calculateCostToObject(const int start, const int end)
+int Animal::calculateCostToObject(const int start, const int end, const QVector<int> &obstacles)
 {
     int total = MainWindow::COLS * MainWindow::COLS;
     QVector<pair<int,int> > grassLand;
     for (int i = 0; i < total; ++i) {
-        grassLand.push_back(make_pair(i, -1));
+        grassLand.push_back(make_pair(i, false));
+    }
+
+    for (int i = 0; i < obstacles.size(); ++i) {
+        grassLand[obstacles[i]].second = true;
     }
 
     std::priority_queue<paired, QVector<paired>, std::greater<paired> > queue;
@@ -126,8 +135,8 @@ int Animal::calculateCostToObject(const int start, const int end)
         int cost = queue.top().first;
         int pos = queue.top().second;
         queue.pop();
-        if (grassLand[pos].second == -1) {
-            grassLand[pos].second = cost;
+        if (grassLand[pos].second == false) {
+            grassLand[pos].second = true;
 
             if (pos == end)
                 return cost;

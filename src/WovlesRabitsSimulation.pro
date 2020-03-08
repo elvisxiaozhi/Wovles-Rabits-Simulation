@@ -27,12 +27,17 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     rabit.cpp \
-    animal.cpp
+    animal.cpp \
+    wolf.cpp
 
 HEADERS += \
         mainwindow.h \
     rabit.h \
-    animal.h
+    animal.h \
+    wolf.h
 
 FORMS += \
         mainwindow.ui
+
+RESOURCES += \
+    ../icons/resources.qrc
