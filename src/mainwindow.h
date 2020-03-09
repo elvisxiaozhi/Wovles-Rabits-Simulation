@@ -20,6 +20,8 @@ public:
     ~MainWindow();
     static const int ROWS = 20;
     static const int COLS = 20;
+    static constexpr float rabitSpeed = 1;
+    static constexpr float wolfSpeed = 1.2;
 
 private:
     Ui::MainWindow *ui;

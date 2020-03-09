@@ -15,8 +15,8 @@ public:
     virtual ~Animal();
     int getAnimalPos();
     void changeAnimalPos(const int pos);
-    enum directions { up, down, left, right } prevMoveDir;
-    void savePrevMoveDir(const int prevMove, const int nextMove);
+//    enum directions { up, down, left, right } prevMoveDir;
+//    void savePrevMoveDir(const int prevMove, const int nextMove);
     int findNeareastObject(const QVector<int> &objects, const QVector<int> &obstacles);
     const pair<int, int> findNextMoveToObject(const int start, const int end, const QVector<int> &obstacles);
     const QVector<int> getAroundPlaces(const int pos, const QVector<int> &obstacles = QVector<int>());

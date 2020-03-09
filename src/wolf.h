@@ -8,12 +8,12 @@ class Wolf : public Animal
 {
 public:
     Wolf(int pos);
-    int chooseNextMove(const QVector<int> &rabits, const QVector<int> &rabitHoles);
+    int chooseNextMove(const QVector<int> &rabits, const QVector<int> &rabitFood, const QVector<int> &rabitHoles);
     bool hasRabitEaten(QVector<Rabit *> &rabits);
-//    void savePrevMoveDir(const int prevMove, const int nextMove);
+    void savePrevMoveDir(const int prevMove, const int nextMove);
 
 private:
-//    enum directions { up, down, left, right } prevMoveDir;
+    enum directions { up, down, left, right } prevMoveDir;
     int randomMoveTime = 3;
     void setRandomMoveTime();
     int chooseNextRandomMove(const int pos, const QVector<int> &obstacles);

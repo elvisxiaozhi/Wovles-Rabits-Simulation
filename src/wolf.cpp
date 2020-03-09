@@ -6,7 +6,7 @@ Wolf::Wolf(int pos) : Animal(pos), randomMoveTime(0)
 
 }
 
-int Wolf::chooseNextMove(const QVector<int> &rabits, const QVector<int> &rabitHoles)
+int Wolf::chooseNextMove(const QVector<int> &rabits, const QVector<int> &rabitFood, const QVector<int> &rabitHoles)
 {
     int wolfPos = getAnimalPos();
 
@@ -16,12 +16,29 @@ int Wolf::chooseNextMove(const QVector<int> &rabits, const QVector<int> &rabitHo
             return nextMove;
     }
 
+//    int checkLayers = 6;
+//    int rabitPos = checkObjInSurroundings(wolfPos, checkLayers, rabits);
+//    if (rabitPos != -1) {
+//        pair<int, int> toRabit = findNextMoveToObject(wolfPos, rabitPos, rabitHoles);
+
+//        return toRabit.first;
+//    }
+
     int nearestRabit = findNeareastObject(rabits, rabitHoles);
     if (nearestRabit != -1) {
         pair<int, int> toRabit = findNextMoveToObject(wolfPos, nearestRabit, rabitHoles);
 
         return toRabit.first;
     }
+
+//    int choice = rand() % 1;
+//    if (choice == 0) {
+//        QVector<int> tmp = { rabitFood[rand() % rabitFood.size()] };
+//        int nearestRabitFood = findNeareastObject(tmp, rabitHoles);
+//        pair<int, int> toRabitFood = findNextMoveToObject(wolfPos, nearestRabitFood, rabitHoles);
+
+//        return toRabitFood.first;
+//    }
 
     randomMoveTime = 3;
     int nextMove = chooseNextRandomMove(wolfPos, rabitHoles);
@@ -44,21 +61,21 @@ bool Wolf::hasRabitEaten(QVector<Rabit *> &rabits)
     return false;
 }
 
-//void Wolf::savePrevMoveDir(const int prevMove, const int nextMove)
-//{
-//    if (prevMove - MainWindow::COLS == nextMove) {
-//        prevMoveDir = up;
-//    }
-//    else if (prevMove + MainWindow::COLS == nextMove) {
-//        prevMoveDir = down;
-//    }
-//    else if (prevMove - 1 == nextMove) {
-//        prevMoveDir = left;
-//    }
-//    else if (prevMove + 1 == nextMove) {
-//        prevMoveDir = right;
-//    }
-//}
+void Wolf::savePrevMoveDir(const int prevMove, const int nextMove)
+{
+    if (prevMove - MainWindow::COLS == nextMove) {
+        prevMoveDir = up;
+    }
+    else if (prevMove + MainWindow::COLS == nextMove) {
+        prevMoveDir = down;
+    }
+    else if (prevMove - 1 == nextMove) {
+        prevMoveDir = left;
+    }
+    else if (prevMove + 1 == nextMove) {
+        prevMoveDir = right;
+    }
+}
 
 void Wolf::setRandomMoveTime()
 {

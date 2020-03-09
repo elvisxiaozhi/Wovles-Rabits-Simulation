@@ -24,21 +24,21 @@ void Animal::changeAnimalPos(const int pos)
     animalPos = pos;
 }
 
-void Animal::savePrevMoveDir(const int prevMove, const int nextMove)
-{
-    if (prevMove - MainWindow::COLS == nextMove) {
-        prevMoveDir = up;
-    }
-    else if (prevMove + MainWindow::COLS == nextMove) {
-        prevMoveDir = down;
-    }
-    else if (prevMove - 1 == nextMove) {
-        prevMoveDir = left;
-    }
-    else if (prevMove + 1 == nextMove) {
-        prevMoveDir = right;
-    }
-}
+//void Animal::savePrevMoveDir(const int prevMove, const int nextMove)
+//{
+//    if (prevMove - MainWindow::COLS == nextMove) {
+//        prevMoveDir = up;
+//    }
+//    else if (prevMove + MainWindow::COLS == nextMove) {
+//        prevMoveDir = down;
+//    }
+//    else if (prevMove - 1 == nextMove) {
+//        prevMoveDir = left;
+//    }
+//    else if (prevMove + 1 == nextMove) {
+//        prevMoveDir = right;
+//    }
+//}
 
 int Animal::findNeareastObject(const QVector<int> &objects, const QVector<int> &obstacles)
 {
