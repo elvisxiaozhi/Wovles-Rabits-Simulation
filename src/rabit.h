@@ -10,11 +10,10 @@ class Rabit : public Animal
 public:
     Rabit(int pos);
     int chooseNextMove(const QVector<int> &rabitFood, const QVector<int> &rabitHoles, const QVector<int> &wolves);
-    bool isTimeToComeOut();
-    void updateHideTime();
+    void updateHideStatus(const bool status = true);
 
 private:
-    int hideTime = 3;
+    bool isHidden = false;
 };
 
 #endif // RABIT_H

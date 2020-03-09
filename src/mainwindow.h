@@ -23,7 +23,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    enum directions { Up, Down, Left, Right } rabitDir, wolfDir;
     QVector<QLabel *> grasslandVec;
     QVector<int> rabitHoles;
     QVector<int> rabitFood;
@@ -36,20 +35,16 @@ private:
     void generateRabitFood(int rabitFoodNum = 10);
     void generateRabits(int rabitNum = 3);
     void generateWolves(int wolfNum = 3);
-    void setUpEnviroment(int rabitHoleNum = 3, int rabitFoodNum = 10, int rabitNum = 3, int wolfNum = 3);
+    void setUpEnviroment(int rabitHoleNum = 3, int rabitFoodNum = 10, int wolfNum = 3);
     void setUpTimer();
-    void moveRabit(Rabit *rabit);
     void moveRabit(Rabit *rabit, const int nextMove);
     void moveWolf(Wolf *wolf, const int nextMove);
-    bool isRabitHole(const int pos);
-    int isRabitFood(const int pos);
     int isObject(const QVector<int> &object, const int pos);
     template <class Object>
     const QVector<int> getObjectPos(const QVector<Object *> &object);
     int isGameOver();
 
-protected:
-    void keyPressEvent(QKeyEvent *);
+private slots:
     void onRabitMove();
     void onWolfMove();
 };

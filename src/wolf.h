@@ -10,15 +10,15 @@ public:
     Wolf(int pos);
     int chooseNextMove(const QVector<int> &rabits, const QVector<int> &rabitHoles);
     bool hasRabitEaten(QVector<Rabit *> &rabits);
-    void savePrevMoveDir(const int prevMove, const int nextMove);
+//    void savePrevMoveDir(const int prevMove, const int nextMove);
 
 private:
-    enum directions { up, down, left, right } prevMoveDir;
+//    enum directions { up, down, left, right } prevMoveDir;
     int randomMoveTime = 3;
     void setRandomMoveTime();
-    int chooseNextRandomMove(const int pos);
+    int chooseNextRandomMove(const int pos, const QVector<int> &obstacles);
     bool contineRandomMove();
-    int isNextMoveAvailable(const int curPos, const int nextMoveDir);
+    int isNextMoveAvailable(const int curPos, const int nextMoveDir, const QVector<int> &obstacles);
 };
 
 #endif // WOLF_H

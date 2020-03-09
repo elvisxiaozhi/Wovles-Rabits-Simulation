@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 #include <stdlib.h>
 #include <QDebug>
-#include <QKeyEvent>
 
 MainWindow::MainWindow(QWidget *parent) :
     QWidget(parent),
@@ -11,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     srand(time(nullptr));
 
-    setUpEnviroment(3, 10, 1, 1);
+    setUpEnviroment(7, 10, 1);
     setUpTimer();
 }
 
@@ -27,9 +26,6 @@ void MainWindow::createGrassLand()
             QLabel *lbl = new QLabel(this);
             lbl->setFixedSize(30, 30);
             lbl->setAlignment(Qt::AlignCenter);
-
-//            lbl->setText(QString::number(i * 20 + j));
-
             lbl->setStyleSheet("QLabel { background-color: #00ff00; border: 1px solid gray; }");
 
             ui->gridLayout->addWidget(lbl, i, j);
@@ -53,7 +49,6 @@ void MainWindow::generateRabitHoles(int rabitHoleNum)
         if (std::find(rabitHoles.begin(), rabitHoles.end(), random) == rabitHoles.end()) {
             rabitHoles.push_back(random);
 
-//            grasslandVec[random]->setStyleSheet("QLabel { background-color: black; border: 1px solid gray; }");
             grasslandVec[random]->setPixmap(QPixmap(":/icons/hole.png"));
         }
     }
@@ -73,6 +68,7 @@ void MainWindow::generateRabitFood(int rabitFoodNum)
         if (std::find(rabitHoles.begin(), rabitHoles.end(), random) == rabitHoles.end() &&
                 std::find(rabitFood.begin(), rabitFood.end(), random) == rabitFood.end()) {
             rabitFood.push_back(random);
+
             grasslandVec[random]->setPixmap(QPixmap(":/icons/carrot.png"));
         }
     }
@@ -90,8 +86,7 @@ void MainWindow::generateRabits(int rabitNum)
     rabits.clear();
 
     for (int i = 0; i < rabitNum; ++i) {
-        int rabitHole = rand() % rabitHoles.size();
-        Rabit *rabit = new Rabit(rabitHoles[rabitHole]);
+        Rabit *rabit = new Rabit(rabitHoles[i]);
         rabits.push_back(rabit);
 
         grasslandVec[rabit->getAnimalPos()]->setPixmap(QPixmap(":/icons/hidden-rabbit.png"));
@@ -118,19 +113,20 @@ void MainWindow::generateWolves(int wolfNum)
             Wolf *wolf = new Wolf(random);
             wolves.push_back(wolf);
             wolfPos.push_back(random);
+
             grasslandVec[random]->setPixmap(QPixmap(":/icons/wolf.png"));
 
         }
     }
 }
 
-void MainWindow::setUpEnviroment(int rabitHoleNum, int rabitFoodNum, int rabitNum, int wolfNum)
+void MainWindow::setUpEnviroment(int rabitHoleNum, int rabitFoodNum, int wolfNum)
 {
     createGrassLand();
     //注意： 后面几个函数调用的先后顺序不能错
     generateRabitHoles(rabitHoleNum);
     generateRabitFood(rabitFoodNum);
-    generateRabits(rabitNum);
+    generateRabits(rabitHoleNum);
     generateWolves(wolfNum);
 }
 
@@ -145,66 +141,16 @@ void MainWindow::setUpTimer()
     connect(wolfTimer, &QTimer::timeout, this, &MainWindow::onWolfMove);
 }
 
-void MainWindow::moveRabit(Rabit *rabit)
-{
-    int rabitPos = rabit->getAnimalPos();
-    int row = rabitPos / COLS;
-    int col = rabitPos % COLS;
-
-    switch (rabitDir) {
-    case Up:
-        --row;
-        break;
-    case Down:
-        ++row;
-        break;
-    case Left:
-        --col;
-        break;
-    case Right:
-        ++col;
-        break;
-    default:
-        break;
-    }
-
-    if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
-        /* 判断兔子移动前的为止是不是兔子洞
-         * 是兔子洞的话，则把这个为止设置成黑色
-         * 否则设置成草地的颜色绿色 */
-        if (isRabitHole(rabitPos)) {
-            grasslandVec[rabitPos]->setStyleSheet("QLabel { background-color: black; border: 1px solid gray; }");
-        }
-        else {
-            grasslandVec[rabitPos]->setStyleSheet("QLabel { background-color: #00ff00; border: 1px solid gray; }");
-        }
-
-        grasslandVec[rabitPos]->setPixmap(QPixmap());
-
-        rabitPos = row * COLS + col;
-
-        int index = isRabitFood(rabitPos); //判断兔子的下一个移动点有没有食物
-        if (index != -1) {
-            rabitFood.erase(rabitFood.begin() + index); //如果有食物，则这个食物被兔子吃掉，并把它从数组中移除
-        }
-
-        grasslandVec[rabitPos]->setPixmap(QPixmap(":/icons/rabbit.png"));
-
-        rabit->changeAnimalPos(rabitPos);
-    }
-}
-
 void MainWindow::moveRabit(Rabit *rabit, const int nextMove)
 {
-    if (rabit->isTimeToComeOut() == false) {
-        return;
-    }
-
     int rabitPos = rabit->getAnimalPos();
     int index = isObject(rabitFood, nextMove); //判断兔子的下一个移动点有没有食物
     if (index != -1) {
         rabitFood.erase(rabitFood.begin() + index); //如果有食物，则这个食物被兔子吃掉，并把它从数组中移除
         grasslandVec[rabitPos]->setPixmap(QPixmap());
+    }
+    else {
+        grasslandVec[rabitPos]->setPixmap(QPixmap(":/icons/rabbit.png"));
     }
 
     if (isObject(rabitHoles, rabitPos) != -1) {
@@ -215,7 +161,7 @@ void MainWindow::moveRabit(Rabit *rabit, const int nextMove)
     }
 
     if (isObject(rabitHoles, nextMove) != -1) {
-        rabit->updateHideTime();
+        rabit->updateHideStatus(true);
 
         grasslandVec[nextMove]->setPixmap(QPixmap(":/icons/hidden-rabbit.png"));
     }
@@ -224,18 +170,24 @@ void MainWindow::moveRabit(Rabit *rabit, const int nextMove)
     }
 
     rabit->changeAnimalPos(nextMove);
+
+    if (isGameOver() == 1) {
+        rabitTimer->stop();
+        wolfTimer->stop();
+        qDebug() << "Rabit Won";
+    }
 }
 
 void MainWindow::moveWolf(Wolf *wolf, const int nextMove)
 {
     int wolfPos = wolf->getAnimalPos();
-    wolf->savePrevMoveDir(wolfPos, nextMove);
+    wolf->savePrevMoveDir(wolfPos, wolfPos);
 
-    if (isObject(rabitFood, wolfPos)) {
-        grasslandVec[wolfPos]->setPixmap(QPixmap(":/icons/rabit.png"));
+    if (isObject(rabitFood, wolfPos) != -1) {
+        grasslandVec[wolfPos]->setPixmap(QPixmap());
     }
     else {
-        grasslandVec[wolfPos]->setPixmap(QPixmap());
+        grasslandVec[wolfPos]->setPixmap(QPixmap(":/icons/rabit.png"));
     }
 
     wolf->changeAnimalPos(nextMove);
@@ -243,33 +195,11 @@ void MainWindow::moveWolf(Wolf *wolf, const int nextMove)
 
     wolf->hasRabitEaten(rabits);
 
-    if (isGameOver() != 0) {
+    if (isGameOver() == 2) {
         rabitTimer->stop();
         wolfTimer->stop();
-        qDebug() << "Game Over";
+        qDebug() << "Wolf Won";
     }
-}
-
-bool MainWindow::isRabitHole(const int pos)
-{
-    if (std::find(rabitHoles.begin(), rabitHoles.end(), pos) != rabitHoles.end()) {
-        return true;
-    }
-
-    return false;
-}
-
-/* 判断兔子下一个移动点有没有食物
- * 有的话则返回这个食物在rabitFood数组中的index, 便于后续移除该元素使用
- * 没有的话则返回0 */
-int MainWindow::isRabitFood(const int pos)
-{
-    auto it = std::find(rabitFood.begin(), rabitFood.end(), pos);
-    if (it != rabitFood.end()) {
-        return std::distance(rabitFood.begin(), it);
-    }
-
-    return -1;
 }
 
 int MainWindow::isObject(const QVector<int> &object, const int pos)
@@ -303,53 +233,22 @@ const QVector<int> MainWindow::getObjectPos(const QVector<Object *> &object)
     return pos;
 }
 
-void MainWindow::keyPressEvent(QKeyEvent *event)
-{
-    switch (event->key()) {
-    case Qt::Key_W:
-        rabitDir = Up;
-        moveRabit(rabits[0]);
-        break;
-    case Qt::Key_S:
-        rabitDir = Down;
-        moveRabit(rabits[0]);
-        break;
-    case Qt::Key_A:
-        rabitDir = Left;
-        moveRabit(rabits[0]);
-        break;
-    case Qt::Key_D:
-        rabitDir = Right;
-        moveRabit(rabits[0]);
-        break;
-    case Qt::Key_1:
-
-        break;
-    case Qt::Key_Up:
-
-        break;
-    case Qt::Key_Down:
-
-        break;
-    case Qt::Key_Left:
-
-        break;
-    case Qt::Key_Right:
-
-        break;
-    case Qt::Key_L:
-
-        break;
-    default:
-        break;
-    }
-}
-
 void MainWindow::onRabitMove()
 {
-    QVector<int> obstacles = getObjectPos(wolves);
+    QVector<int> wolfPos = getObjectPos(wolves);
     for (int i = 0; i < rabits.size(); ++i) {
-        int nextMove = rabits[i]->chooseNextMove(rabitFood, rabitHoles, obstacles);
+        int nextMove = rabits[i]->chooseNextMove(rabitFood, rabitHoles, wolfPos);
+
+        for (int j = 0; j < rabits.size(); ++j) {
+            if (j != i && nextMove == rabits[j]->getAnimalPos()) {
+                QVector<int> obstacles = getObjectPos(rabits);
+                QVector<int> aroundPlaces = rabits[i]->getAroundPlaces(rabits[i]->getAnimalPos(), obstacles);
+                nextMove = aroundPlaces[rand() % aroundPlaces.size()];
+
+                break;
+            }
+        }
+
         moveRabit(rabits[i], nextMove);
     }
 }
@@ -357,10 +256,19 @@ void MainWindow::onRabitMove()
 void MainWindow::onWolfMove()
 {
     QVector<int> rabitPos = getObjectPos(rabits);
+    QVector<int> wolfPos = getObjectPos(wolves);
+    QVector<int> obstacles = rabitHoles;
+    for (int i = 0; i < wolfPos.size(); ++i) {
+        obstacles.push_back(wolfPos[i]);
+    }
 
     for (int i = 0; i < wolves.size(); ++i) {
-        int nextMove = wolves[i]->chooseNextMove(rabitPos, rabitHoles);
+        int nextMove = wolves[i]->chooseNextMove(rabitPos, obstacles);
+        obstacles.push_back(nextMove);
 
-        moveWolf(wolves[i], nextMove);
+        if (nextMove == -1)
+            moveWolf(wolves[i], wolves[i]->getAnimalPos());
+        else
+            moveWolf(wolves[i], nextMove);
     }
 }

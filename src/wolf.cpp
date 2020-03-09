@@ -11,7 +11,7 @@ int Wolf::chooseNextMove(const QVector<int> &rabits, const QVector<int> &rabitHo
     int wolfPos = getAnimalPos();
 
     if (contineRandomMove() == true) {
-        int nextMove = chooseNextRandomMove(wolfPos);
+        int nextMove = chooseNextRandomMove(wolfPos, rabitHoles);
         if (nextMove != -1)
             return nextMove;
     }
@@ -24,7 +24,7 @@ int Wolf::chooseNextMove(const QVector<int> &rabits, const QVector<int> &rabitHo
     }
 
     randomMoveTime = 3;
-    int nextMove = chooseNextRandomMove(wolfPos);
+    int nextMove = chooseNextRandomMove(wolfPos, rabitHoles);
 
     return nextMove;
 }
@@ -44,36 +44,36 @@ bool Wolf::hasRabitEaten(QVector<Rabit *> &rabits)
     return false;
 }
 
-void Wolf::savePrevMoveDir(const int prevMove, const int nextMove)
-{
-    if (prevMove - MainWindow::COLS == nextMove) {
-        prevMoveDir = up;
-    }
-    else if (prevMove + MainWindow::COLS == nextMove) {
-        prevMoveDir = down;
-    }
-    else if (prevMove - 1 == nextMove) {
-        prevMoveDir = left;
-    }
-    else if (prevMove + 1 == nextMove) {
-        prevMoveDir = right;
-    }
-}
+//void Wolf::savePrevMoveDir(const int prevMove, const int nextMove)
+//{
+//    if (prevMove - MainWindow::COLS == nextMove) {
+//        prevMoveDir = up;
+//    }
+//    else if (prevMove + MainWindow::COLS == nextMove) {
+//        prevMoveDir = down;
+//    }
+//    else if (prevMove - 1 == nextMove) {
+//        prevMoveDir = left;
+//    }
+//    else if (prevMove + 1 == nextMove) {
+//        prevMoveDir = right;
+//    }
+//}
 
 void Wolf::setRandomMoveTime()
 {
     randomMoveTime = 3;
 }
 
-int Wolf::chooseNextRandomMove(const int pos)
+int Wolf::chooseNextRandomMove(const int pos, const QVector<int> &obstacles)
 {
-    int nextMove = isNextMoveAvailable(pos, prevMoveDir);
+    int nextMove = isNextMoveAvailable(pos, prevMoveDir, obstacles);
     if (nextMove != -1)
         return nextMove;
 
     do {
         int nextMoveDir = rand() % 4;
-        nextMove = isNextMoveAvailable(pos, nextMoveDir);
+        nextMove = isNextMoveAvailable(pos, nextMoveDir, obstacles);
     } while (nextMove == -1);
 
     return nextMove;
@@ -90,7 +90,7 @@ bool Wolf::contineRandomMove()
     return false;
 }
 
-int Wolf::isNextMoveAvailable(const int curPos, const int nextMoveDir)
+int Wolf::isNextMoveAvailable(const int curPos, const int nextMoveDir, const QVector<int> &obstacles)
 {
     int row = curPos / MainWindow::COLS;
     int col = curPos % MainWindow::COLS;
@@ -99,19 +99,19 @@ int Wolf::isNextMoveAvailable(const int curPos, const int nextMoveDir)
 
     switch (nextMoveDir) {
     case up:
-        if (row - 1 >= 0)
+        if (row - 1 >= 0 && isObject(obstacles, curPos - MainWindow::COLS) == -1)
             nextMove = curPos - MainWindow::COLS;
         break;
     case down:
-        if (row + 1 < MainWindow::ROWS)
+        if (row + 1 < MainWindow::ROWS && isObject(obstacles, curPos + MainWindow::COLS) == -1)
             nextMove = curPos + MainWindow::COLS;
         break;
     case left:
-        if (col - 1 >= 0)
+        if (col - 1 >= 0 && isObject(obstacles, curPos - 1) == -1)
             nextMove = curPos - 1;
         break;
     case right:
-        if (col + 1 < MainWindow::COLS)
+        if (col + 1 < MainWindow::COLS && isObject(obstacles, curPos + 1) == -1)
             nextMove = curPos + 1;
         break;
     default:
