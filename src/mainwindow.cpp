@@ -73,8 +73,6 @@ void MainWindow::generateRabitFood(int rabitFoodNum)
         if (std::find(rabitHoles.begin(), rabitHoles.end(), random) == rabitHoles.end() &&
                 std::find(rabitFood.begin(), rabitFood.end(), random) == rabitFood.end()) {
             rabitFood.push_back(random);
-
-//            grasslandVec[random]->setStyleSheet("QLabel { background-color: yellow; border: 1px solid gray; }");
             grasslandVec[random]->setPixmap(QPixmap(":/icons/carrot.png"));
         }
     }
@@ -191,13 +189,9 @@ void MainWindow::moveRabit(Rabit *rabit)
         }
 
         grasslandVec[rabitPos]->setPixmap(QPixmap(":/icons/rabbit.png"));
-//        grasslandVec[rabitPos]->setStyleSheet("QLabel { background-color: pink; border: 1px solid gray; }"); //pink暂时代表兔子
 
         rabit->changeAnimalPos(rabitPos);
     }
-
-//    int index = rabit->findNeareastObject(rabitFood);
-    //    grasslandVec[index]->setStyleSheet("QLabel { background-color: purple; border: 1px solid gray; }");
 }
 
 void MainWindow::moveRabit(Rabit *rabit, const int nextMove)
@@ -207,20 +201,20 @@ void MainWindow::moveRabit(Rabit *rabit, const int nextMove)
     }
 
     int rabitPos = rabit->getAnimalPos();
-    int index = isRabitFood(nextMove); //判断兔子的下一个移动点有没有食物
+    int index = isObject(rabitFood, nextMove); //判断兔子的下一个移动点有没有食物
     if (index != -1) {
         rabitFood.erase(rabitFood.begin() + index); //如果有食物，则这个食物被兔子吃掉，并把它从数组中移除
         grasslandVec[rabitPos]->setPixmap(QPixmap());
     }
 
-    if (isRabitHole(rabitPos)) {
+    if (isObject(rabitHoles, rabitPos) != -1) {
         grasslandVec[rabitPos]->setPixmap(QPixmap(":/icons/hole.png"));
     }
     else {
         grasslandVec[rabitPos]->setPixmap(QPixmap());
     }
 
-    if (isRabitHole(nextMove)) {
+    if (isObject(rabitHoles, nextMove) != -1) {
         rabit->updateHideTime();
 
         grasslandVec[nextMove]->setPixmap(QPixmap(":/icons/hidden-rabbit.png"));
@@ -235,6 +229,7 @@ void MainWindow::moveRabit(Rabit *rabit, const int nextMove)
 void MainWindow::moveWolf(Wolf *wolf, const int nextMove)
 {
     int wolfPos = wolf->getAnimalPos();
+    wolf->savePrevMoveDir(wolfPos, nextMove);
 
     if (isObject(rabitFood, wolfPos)) {
         grasslandVec[wolfPos]->setPixmap(QPixmap(":/icons/rabit.png"));
@@ -364,7 +359,7 @@ void MainWindow::onWolfMove()
     QVector<int> rabitPos = getObjectPos(rabits);
 
     for (int i = 0; i < wolves.size(); ++i) {
-        int nextMove = wolves[i]->chooseNextMove(rabitPos, rabitFood, rabitHoles);
+        int nextMove = wolves[i]->chooseNextMove(rabitPos, rabitHoles);
 
         moveWolf(wolves[i], nextMove);
     }
