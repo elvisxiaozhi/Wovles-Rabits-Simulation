@@ -2,6 +2,10 @@
 #include "ui_mainwindow.h"
 #include <stdlib.h>
 #include <QDebug>
+#include <QMessageBox>
+
+float MainWindow::rabitSpeed = 1;
+float MainWindow::wolfSpeed = 1.2;
 
 MainWindow::MainWindow(QWidget *parent) :
     QWidget(parent),
@@ -10,7 +14,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     srand(time(nullptr));
 
-    setUpEnviroment(4, 10, 2);
+    int rabitNum = ui->rabitNumEdit->text().toInt();
+    int carrotNum = ui->carrotNumEdit->text().toInt();
+    int wolfNum = ui->wolfNumEdit->text().toInt();
+    setUpEnviroment(rabitNum, carrotNum, wolfNum);
+
+    rabitSpeed = ui->rabitSpeedEdit->text().toFloat();
+    wolfSpeed = ui->wolfSpeedEdit->text().toFloat();
     setUpTimer();
 }
 
@@ -21,6 +31,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::createGrassLand()
 {
+    for (int i = 0; i < grasslandVec.size(); ++i) {
+        delete grasslandVec[i];
+    }
+    grasslandVec.clear();
+
     for (int i = 0; i < ROWS; ++i) {
         for (int j = 0; j < COLS; ++j) {
             QLabel *lbl = new QLabel(this);
@@ -76,7 +91,7 @@ void MainWindow::generateRabitFood(int rabitFoodNum)
 
 void MainWindow::generateRabits(int rabitNum)
 {
-    if (rabitNum <= 0) {
+    if (rabitNum <= 0 || rabitNum > 10) {
         rabitNum = 3;
     }
 
@@ -95,7 +110,7 @@ void MainWindow::generateRabits(int rabitNum)
 
 void MainWindow::generateWolves(int wolfNum)
 {
-    if (wolfNum <= 0) {
+    if (wolfNum <= 0 || wolfNum > 10) {
         wolfNum = 3;
     }
 
@@ -139,6 +154,10 @@ void MainWindow::setUpTimer()
     wolfTimer = new QTimer(this);
     wolfTimer->start(150 * rabitSpeed);
     connect(wolfTimer, &QTimer::timeout, this, &MainWindow::onWolfMove);
+
+    countDownTimer = new QTimer(this);
+    countDownTimer->start(1000);
+    connect(countDownTimer, &QTimer::timeout, this, &MainWindow::onCountDown);
 }
 
 void MainWindow::moveRabit(Rabit *rabit, const int nextMove)
@@ -164,9 +183,7 @@ void MainWindow::moveRabit(Rabit *rabit, const int nextMove)
             rabitFood.erase(rabitFood.begin() + index); //如果有食物，则这个食物被兔子吃掉，并把它从数组中移除
 
             if (isGameOver() == 1) {
-                rabitTimer->stop();
-                wolfTimer->stop();
-                qDebug() << "Rabit Won";
+                gameOver("Rabits Won");
             }
         }
     }
@@ -190,9 +207,7 @@ void MainWindow::moveWolf(Wolf *wolf, const int nextMove)
 
     if (wolf->hasRabitEaten(rabits)) {
         if (isGameOver() == 2) {
-            rabitTimer->stop();
-            wolfTimer->stop();
-            qDebug() << "Wolf Won";
+            gameOver("Wolves Won");
         }
     }
 
@@ -217,6 +232,15 @@ int MainWindow::isGameOver()
         return 2;
 
     return 0;
+}
+
+void MainWindow::gameOver(const QString title)
+{
+    ui->gameStatusLbl->setText(title);
+    ui->gameStatusLbl->setStyleSheet("QLabel { font: bold; color: red; }");
+    rabitTimer->stop();
+    wolfTimer->stop();
+    countDownTimer->stop();
 }
 
 template <class Object>
@@ -268,4 +292,32 @@ void MainWindow::onWolfMove()
 
         moveWolf(wolves[i], nextMove);
     }
+}
+
+void MainWindow::onCountDown()
+{
+    --countDown;
+    ui->gameStatusLbl->setText(QString::number(countDown));
+
+    if (countDown <= 0) {
+        gameOver("Tie");
+    }
+}
+
+void MainWindow::on_startBTn_clicked()
+{
+    countDown = 60;
+    ui->gameStatusLbl->setText(QString::number(countDown));
+    ui->gameStatusLbl->setStyleSheet("QLabel { font: 40px; color: red; }");
+
+    int rabitNum = ui->rabitNumEdit->text().toInt();
+    int carrotNum = ui->carrotNumEdit->text().toInt();
+    int wolfNum = ui->wolfNumEdit->text().toInt();
+    setUpEnviroment(rabitNum, carrotNum, wolfNum);
+
+    rabitSpeed = ui->rabitSpeedEdit->text().toFloat();
+    wolfSpeed = ui->wolfSpeedEdit->text().toFloat();
+    rabitTimer->start(150 * wolfSpeed);
+    wolfTimer->start(150 * rabitSpeed);
+    countDownTimer->start(1000);
 }

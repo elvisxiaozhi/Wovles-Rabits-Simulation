@@ -20,8 +20,8 @@ public:
     ~MainWindow();
     static const int ROWS = 20;
     static const int COLS = 20;
-    static constexpr float rabitSpeed = 1;
-    static constexpr float wolfSpeed = 1.2;
+    static float rabitSpeed;
+    static float wolfSpeed;
 
 private:
     Ui::MainWindow *ui;
@@ -30,7 +30,8 @@ private:
     QVector<int> rabitFood;
     QVector<Rabit *> rabits;
     QVector<Wolf *> wolves;
-    QTimer *rabitTimer, *wolfTimer;
+    QTimer *rabitTimer, *wolfTimer, *countDownTimer;
+    int countDown = 60;
 
     void createGrassLand();
     void generateRabitHoles(int rabitHoleNum = 3);
@@ -45,10 +46,13 @@ private:
     template <class Object>
     const QVector<int> getObjectPos(const QVector<Object *> &object);
     int isGameOver();
+    void gameOver(const QString title);
 
 private slots:
     void onRabitMove();
     void onWolfMove();
+    void onCountDown();
+    void on_startBTn_clicked();
 };
 
 #endif // MAINWINDOW_H
