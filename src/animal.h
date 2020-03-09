@@ -15,16 +15,18 @@ public:
     virtual ~Animal();
     int getAnimalPos();
     void changeAnimalPos(const int pos);
-    int findNeareastObject(const QVector<int> &object, const QVector<int> &obstacles);
+    int findNeareastObject(const QVector<int> &objects, const QVector<int> &obstacles);
     const pair<int, int> findNextMoveToObject(const int start, const int end, const QVector<int> &obstacles);
-    const QVector<int> getAroundPlaces(const int pos);
+    const QVector<int> getAroundPlaces(const int pos, const QVector<int> &obstacles = QVector<int>());
+    int checkObjInSurroundings(const int pos, int layers, const QVector<int> &objects);
+    int calculateCostToObject(const int start, const int end, const QVector<int> &obstacles = QVector<int>());
 //    virtual const int chooseNextMove(const QVector<int> &obj1, const QVector<int> &obj2, const QVector<int> &obstacles);
 
 private:
     int animalPos;
-    void addToQueue(std::priority_queue<paired, QVector<paired>, std::greater<paired> > &queue, const int pos, const int cost);
-    int isObject(const QVector<int> &object, const int pos);
-    int calculateCostToObject(const int start, const int end, const QVector<int> &obstacles);
+    void addToQueue(std::priority_queue<paired, QVector<paired>, std::greater<paired> > &queue, const int pos, const int cost, const QVector<int> &obstacles = QVector<int>());
+    int isObject(const QVector<int> &objects, const int pos);
+    const QVector<pair<int, bool> > initGrassLand();
 };
 
 #endif // ANIMAL_H

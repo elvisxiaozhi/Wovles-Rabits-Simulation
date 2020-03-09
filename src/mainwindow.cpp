@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     srand(time(nullptr));
 
-    setUpEnviroment(3, 10, 2, 2);
+    setUpEnviroment(3, 10, 1, 1);
     setUpTimer();
 }
 
@@ -28,7 +28,7 @@ void MainWindow::createGrassLand()
             lbl->setFixedSize(30, 30);
             lbl->setAlignment(Qt::AlignCenter);
 
-            lbl->setText(QString::number(i * 20 + j));
+//            lbl->setText(QString::number(i * 20 + j));
 
             lbl->setStyleSheet("QLabel { background-color: #00ff00; border: 1px solid gray; }");
 
@@ -143,7 +143,7 @@ void MainWindow::setUpTimer()
     connect(rabitTimer, &QTimer::timeout, this, &MainWindow::onRabitMove);
 
     wolfTimer = new QTimer(this);
-    wolfTimer->start(150);
+    wolfTimer->start(200);
     connect(wolfTimer, &QTimer::timeout, this, &MainWindow::onWolfMove);
 }
 
@@ -202,6 +202,10 @@ void MainWindow::moveRabit(Rabit *rabit)
 
 void MainWindow::moveRabit(Rabit *rabit, const int nextMove)
 {
+    if (rabit->isTimeToComeOut() == false) {
+        return;
+    }
+
     int rabitPos = rabit->getAnimalPos();
     int index = isRabitFood(nextMove); //判断兔子的下一个移动点有没有食物
     if (index != -1) {
@@ -209,13 +213,20 @@ void MainWindow::moveRabit(Rabit *rabit, const int nextMove)
         grasslandVec[rabitPos]->setPixmap(QPixmap());
     }
 
-    grasslandVec[rabitPos]->setPixmap(QPixmap());
-    grasslandVec[nextMove]->setPixmap(QPixmap(":/icons/rabbit.png"));
-
     if (isRabitHole(rabitPos)) {
-//        grasslandVec[rabitPos]->setStyleSheet("QLabel { background-color: black; border: 1px solid gray; }");
         grasslandVec[rabitPos]->setPixmap(QPixmap(":/icons/hole.png"));
+    }
+    else {
+        grasslandVec[rabitPos]->setPixmap(QPixmap());
+    }
 
+    if (isRabitHole(nextMove)) {
+        rabit->updateHideTime();
+
+        grasslandVec[nextMove]->setPixmap(QPixmap(":/icons/hidden-rabbit.png"));
+    }
+    else {
+        grasslandVec[nextMove]->setPixmap(QPixmap(":/icons/rabbit.png"));
     }
 
     rabit->changeAnimalPos(nextMove);
@@ -266,7 +277,7 @@ int MainWindow::isRabitFood(const int pos)
     return -1;
 }
 
-bool MainWindow::isObject(const QVector<int> &object, const int pos)
+int MainWindow::isObject(const QVector<int> &object, const int pos)
 {
     auto it = std::find(object.begin(), object.end(), pos);
     if (it != object.end()) {

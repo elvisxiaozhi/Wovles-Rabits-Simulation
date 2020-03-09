@@ -43,7 +43,7 @@ private:
     void moveWolf(Wolf *wolf, const int nextMove);
     bool isRabitHole(const int pos);
     int isRabitFood(const int pos);
-    bool isObject(const QVector<int> &object, const int pos);
+    int isObject(const QVector<int> &object, const int pos);
     template <class Object>
     const QVector<int> getObjectPos(const QVector<Object *> &object);
     int isGameOver();

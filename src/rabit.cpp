@@ -1,7 +1,7 @@
 #include "rabit.h"
 #include "mainwindow.h"
 
-Rabit::Rabit(int pos) : Animal(pos)
+Rabit::Rabit(int pos) : Animal(pos), hideTime(0)
 {
 
 }
@@ -9,34 +9,58 @@ Rabit::Rabit(int pos) : Animal(pos)
 int Rabit::chooseNextMove(const QVector<int> &rabitFood, const QVector<int> &rabitHoles, const QVector<int> &wolves)
 {
     int rabitPos = getAnimalPos();
-    int nearestWolfPos = findNeareastObject(wolves, rabitHoles);
-    // 如果5步之内没有狼，那么这个时候选择去吃萝卜
-    if (nearestWolfPos > 5) {
+    int wolfPos = checkObjInSurroundings(rabitPos, 5, wolves);
+    if (wolfPos == -1) {
         int nearestRabitFoodPos = findNeareastObject(rabitFood, wolves);
         pair<int, int> toRabitFood = findNextMoveToObject(rabitPos, nearestRabitFoodPos, wolves);
+
         return toRabitFood.first;
     }
-    else { // 如果5步之内有狼，则检测最近的兔子洞在哪
+    else {
+        int beforeRabitDies = 10;
         int nearestRabitHole = findNeareastObject(rabitHoles, wolves);
-        if (nearestRabitHole < nearestWolfPos) { //如果能在狼追上自己前跑回兔子洞，那么就炮会兔子洞
+        int costToNearestRabitHole = calculateCostToObject(rabitPos, nearestRabitHole, wolves);
+        if (costToNearestRabitHole < beforeRabitDies) {
             pair<int, int> toRabitHole = findNextMoveToObject(rabitPos, nearestRabitHole, wolves);
+
             return toRabitHole.first;
         }
-        else { // 不然就只有死了，这个时候要么选择继续往兔子洞跑，或者去吃萝卜
-            int choice = rand() % 1;
-            if (choice == 0) {
-                int nearestRabitFoodPos = findNeareastObject(rabitFood, wolves);
-                pair<int, int> toRabitFood = findNextMoveToObject(rabitPos, nearestRabitFoodPos, wolves);
 
-                return toRabitFood.first;
-            }
-            else {
-                pair<int, int> toRabitHole = findNextMoveToObject(rabitPos, nearestRabitHole, wolves);
+        int nearestRabitFoodPos = findNeareastObject(rabitFood, wolves);
+        int costToNearestRabitFood = calculateCostToObject(rabitPos, nearestRabitFoodPos, wolves);
+        if (costToNearestRabitFood < beforeRabitDies) {
+            pair<int, int> toRabitFood = findNextMoveToObject(rabitPos, nearestRabitFoodPos, wolves);
 
-                return toRabitHole.first;
-            }
+            return toRabitFood.first;
         }
     }
 
-    return rabitPos;
+    QVector<int> aroundPlaces = getAroundPlaces(rabitPos);
+    int minCost = INT_MIN;
+    int nextMove = aroundPlaces[0];
+    for (int i = 0; i < aroundPlaces.size(); ++i) {
+        int cost = calculateCostToObject(wolfPos, aroundPlaces[i], wolves);
+        if (minCost < cost) {
+            minCost = cost;
+            nextMove = aroundPlaces[i];
+        }
+    }
+
+    return nextMove;
+}
+
+bool Rabit::isTimeToComeOut()
+{
+    if (hideTime > 0) {
+        --hideTime;
+
+        return false;
+    }
+
+    return true;
+}
+
+void Rabit::updateHideTime()
+{
+    hideTime = 3;
 }
